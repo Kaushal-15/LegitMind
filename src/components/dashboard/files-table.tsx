@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { File, MoreHorizontal, PenSquare, Trash2, Eye } from 'lucide-react';
+import { File, MoreHorizontal, PenSquare, Trash2, Eye, MessageSquare } from 'lucide-react';
 import { FileData } from '@/lib/placeholder-data';
 import { Button } from '@/components/ui/button';
 import {
@@ -35,6 +35,10 @@ export function FilesTable() {
   const router = useRouter();
   const { toast } = useToast();
   const { files, deleteFile } = useFiles();
+
+  const handleAskQuestion = (file: FileData) => {
+    router.push(`/chat?fileId=${file.id}&fileName=${encodeURIComponent(file.name)}`);
+  };
 
   const handleSummarize = (file: FileData) => {
     toast({
@@ -113,6 +117,10 @@ export function FilesTable() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => handleAskQuestion(file)}>
+                            <MessageSquare className="mr-2 h-4 w-4" />
+                            Ask Question
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleView(file)}>
                             <Eye className="mr-2 h-4 w-4" />
                             View
