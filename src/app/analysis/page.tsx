@@ -22,6 +22,8 @@ function AnalysisPage() {
   useEffect(() => {
     if (fileName) {
       setIsLoading(true);
+      // In a real app, you would fetch the document text based on fileId.
+      // For this mock, we are just passing a placeholder text.
       analyzeDocument({ documentText: `This is a mock document text for: ${fileName}` })
         .then(result => {
           setAnalysisResult(result);
@@ -50,7 +52,7 @@ function AnalysisPage() {
           </h2>
           <p className="mt-2 text-center text-muted-foreground">
             Please go back to the 'My Files' page and choose a document to analyze.
-          p>
+          </p>
         </div>
       </DashboardLayout>
     );
