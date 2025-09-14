@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BookText, File, MessageSquare, Upload, Microscope } from 'lucide-react';
+import { BookText, File, MessageSquare, Upload, Microscope, LayoutDashboard } from 'lucide-react';
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/sidebar';
 
 const navItems = [
+  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/upload', icon: Upload, label: 'Upload Documents' },
   { href: '/files', icon: File, label: 'My Files' },
   { href: '/summaries', icon: BookText, label: 'Summaries' },
