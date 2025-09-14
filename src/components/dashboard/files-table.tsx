@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { File, MoreHorizontal, PenSquare, Trash2, Eye, MessageSquare } from 'lucide-react';
+import { File, MoreHorizontal, PenSquare, Trash2, Eye, MessageSquare, Microscope } from 'lucide-react';
 import { FileData } from '@/lib/placeholder-data';
 import { Button } from '@/components/ui/button';
 import {
@@ -51,11 +51,8 @@ export function FilesTable() {
     }, 2000);
   };
   
-  const handleView = (file: FileData) => {
-    toast({
-      title: 'Opening Document',
-      description: `Displaying a preview for ${file.name}.`
-    });
+  const handleAnalyze = (file: FileData) => {
+    router.push(`/analysis?fileId=${file.id}&fileName=${encodeURIComponent(file.name)}`);
   };
 
   const handleDelete = (file: FileData) => {
@@ -121,9 +118,9 @@ export function FilesTable() {
                             <MessageSquare className="mr-2 h-4 w-4" />
                             Ask Question
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleView(file)}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View
+                        <DropdownMenuItem onClick={() => handleAnalyze(file)}>
+                            <Microscope className="mr-2 h-4 w-4" />
+                            Analyze
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleSummarize(file)}>
                             <PenSquare className="mr-2 h-4 w-4" />

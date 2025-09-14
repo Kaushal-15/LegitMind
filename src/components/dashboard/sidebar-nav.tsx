@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BookText, File, MessageSquare, Upload } from 'lucide-react';
+import { BookText, File, MessageSquare, Upload, Microscope } from 'lucide-react';
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -14,6 +14,7 @@ const navItems = [
   { href: '/files', icon: File, label: 'My Files' },
   { href: '/summaries', icon: BookText, label: 'Summaries' },
   { href: '/chat', icon: MessageSquare, label: 'Chat' },
+  { href: '/analysis', icon: Microscope, label: 'Analysis' },
 ];
 
 export function SidebarNav() {
@@ -25,7 +26,7 @@ export function SidebarNav() {
         <SidebarMenuItem key={item.href}>
           <SidebarMenuButton
             asChild
-            isActive={pathname === item.href}
+            isActive={pathname.startsWith(item.href) && (item.href !== '/analysis' || pathname === '/analysis')}
             tooltip={item.label}
             className="justify-start"
           >
