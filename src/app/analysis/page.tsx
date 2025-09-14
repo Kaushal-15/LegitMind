@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { FileText, Shield, AlertTriangle, FileWarning, Loader2, ListOrdered, UserCheck } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/dashboard-layout';
@@ -9,9 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { analyzeDocument, AnalyzeDocumentOutput } from '@/ai/flows/analyze-document';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
-import { useFiles } from '@/hooks/use-files';
+import { useFiles, FilesProvider } from '@/hooks/use-files';
 
-function AnalysisPage() {
+function AnalysisPageContent() {
   const searchParams = useSearchParams();
   const fileId = searchParams.get('fileId');
   const fileName = searchParams.get('fileName');
@@ -56,7 +56,6 @@ function AnalysisPage() {
 
   if (!fileId || !fileName) {
     return (
-      <DashboardLayout>
         <div className="flex h-full flex-col items-center justify-center rounded-lg border-2 border-dashed bg-card">
           <FileWarning className="h-16 w-16 text-muted-foreground" />
           <h2 className="mt-6 text-2xl font-headline font-semibold">
@@ -66,12 +65,10 @@ function AnalysisPage() {
             Please go back to the 'My Files' page and choose a document to analyze.
           </p>
         </div>
-      </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout>
       <div className="space-y-6">
         <Card>
             <CardHeader>
@@ -168,8 +165,19 @@ function AnalysisPage() {
           </Card>
         )}
       </div>
-    </DashboardLayout>
   );
+}
+
+function AnalysisPage() {
+    return (
+        <DashboardLayout>
+            <FilesProvider>
+                <Suspense fallback={<div className="flex justify-center items-center py-20"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>}>
+                    <AnalysisPageContent />
+                </Suspense>
+            </FilesProvider>
+        </DashboardLayout>
+    )
 }
 
 export default AnalysisPage;
