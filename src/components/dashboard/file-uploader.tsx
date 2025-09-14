@@ -1,10 +1,13 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { UploadCloud, File as FileIcon, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { useFiles } from '@/hooks/use-files';
+import { FileData } from '@/lib/placeholder-data';
 
 export function FileUploader() {
   const [file, setFile] = useState<File | null>(null);
@@ -12,6 +15,8 @@ export function FileUploader() {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const { toast } = useToast();
+  const { addFile } = useFiles();
+  const router = useRouter();
 
   const handleFileChange = (files: FileList | null) => {
     if (files && files[0]) {
@@ -48,17 +53,27 @@ export function FileUploader() {
     setTimeout(() => {
       clearInterval(interval);
       setProgress(100);
+
+      const newFile: FileData = {
+        id: new Date().toISOString(),
+        name: file.name,
+        size: `${(file.size / 1024).toFixed(2)} KB`,
+        date: new Date().toLocaleDateString('en-CA'),
+        type: file.name.split('.').pop() as 'pdf' | 'docx' | 'txt',
+      };
+      addFile(newFile);
+
       setTimeout(() => {
         setIsUploading(false);
         toast({
           title: 'Upload Complete',
           description: `${file.name} has been successfully uploaded.`,
         });
-        // reset state after a short delay
-        setTimeout(() => setFile(null), 1000);
+        
+        router.push('/files');
       }, 500);
     }, 4000);
-  }, [file, toast]);
+  }, [file, toast, addFile, router]);
 
   const onDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();

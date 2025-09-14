@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { File, MoreHorizontal, PenSquare, Trash2, Eye } from 'lucide-react';
-import { files, FileData } from '@/lib/placeholder-data';
+import { FileData } from '@/lib/placeholder-data';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -22,7 +22,8 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useFiles } from '@/hooks/use-files';
 
 const fileTypeIcons = {
   pdf: <File className="text-red-500" />,
@@ -33,6 +34,7 @@ const fileTypeIcons = {
 export function FilesTable() {
   const router = useRouter();
   const { toast } = useToast();
+  const { files, deleteFile } = useFiles();
 
   const handleSummarize = (file: FileData) => {
     toast({
@@ -53,6 +55,7 @@ export function FilesTable() {
   };
 
   const handleDelete = (file: FileData) => {
+    deleteFile(file.id);
     toast({
         variant: "destructive",
         title: 'File Deleted',
@@ -64,6 +67,7 @@ export function FilesTable() {
     <Card>
         <CardHeader>
             <CardTitle className="font-headline text-2xl">My Files</CardTitle>
+            <CardDescription>Your uploaded documents will appear here.</CardDescription>
         </CardHeader>
         <CardContent>
             <Table>
@@ -79,6 +83,13 @@ export function FilesTable() {
                 </TableRow>
             </TableHeader>
             <TableBody>
+                {files.length === 0 && (
+                    <TableRow>
+                        <TableCell colSpan={5} className="h-24 text-center">
+                        No files uploaded yet.
+                        </TableCell>
+                    </TableRow>
+                )}
                 {files.map((file) => (
                 <TableRow key={file.id}>
                     <TableCell className="font-medium">
