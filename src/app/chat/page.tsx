@@ -10,14 +10,14 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { chatWithDocument } from '@/ai/flows/chat-with-document';
 import { useToast } from '@/hooks/use-toast';
-import { useFiles } from '@/hooks/use-files';
+import { useFiles, FilesProvider } from '@/hooks/use-files';
 
 type Message = {
   role: 'user' | 'assistant';
   content: string;
 };
 
-function ChatPage() {
+function ChatPageContent() {
   const searchParams = useSearchParams();
   const fileId = searchParams.get('fileId');
   const fileName = searchParams.get('fileName');
@@ -82,7 +82,6 @@ function ChatPage() {
 
   if (!fileId || !fileName) {
     return (
-      <DashboardLayout>
         <div className="flex h-full flex-col items-center justify-center rounded-lg border-2 border-dashed bg-card">
           <FileText className="h-16 w-16 text-muted-foreground" />
           <h2 className="mt-6 text-2xl font-headline font-semibold">
@@ -92,13 +91,10 @@ function ChatPage() {
             Please go to the 'My Files' page and choose a document to start a conversation.
           </p>
         </div>
-      </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout>
-        <FilesProvider>
       <div className="flex h-[calc(100vh-8rem)] flex-col">
         <Card className="flex-1 flex flex-col h-full">
             <CardHeader className="border-b">
@@ -155,9 +151,17 @@ function ChatPage() {
             </CardFooter>
         </Card>
       </div>
-    </FilesProvider>
-    </DashboardLayout>
   );
+}
+
+function ChatPage() {
+    return (
+        <DashboardLayout>
+            <FilesProvider>
+                <ChatPageContent />
+            </FilesProvider>
+        </DashboardLayout>
+    )
 }
 
 const Avatar = ({ icon }: { icon: React.ReactNode }) => (
