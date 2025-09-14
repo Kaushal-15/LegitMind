@@ -10,6 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { chatWithDocument } from '@/ai/flows/chat-with-document';
 import { useToast } from '@/hooks/use-toast';
+import { useFiles } from '@/hooks/use-files';
 
 type Message = {
   role: 'user' | 'assistant';
@@ -20,6 +21,7 @@ function ChatPage() {
   const searchParams = useSearchParams();
   const fileId = searchParams.get('fileId');
   const fileName = searchParams.get('fileName');
+  const { getFileContent } = useFiles();
   
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -46,7 +48,7 @@ function ChatPage() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || !fileId) return;
 
     const userMessage: Message = { role: 'user', content: input };
     setMessages((prev) => [...prev, userMessage]);
@@ -54,10 +56,13 @@ function ChatPage() {
     setIsLoading(true);
 
     try {
-      // In a real app, you would pass the document content or ID.
-      // For this mock, we'll just pass the file name and the question.
+      const documentContext = getFileContent(fileId);
+      if (!documentContext) {
+        throw new Error("Could not retrieve document content.");
+      }
+
       const result = await chatWithDocument({
-        documentContext: `This is a mock context for the document: ${fileName}`,
+        documentContext,
         question: input,
       });
       setMessages((prev) => [...prev, { role: 'assistant', content: result.answer }]);
@@ -93,6 +98,7 @@ function ChatPage() {
 
   return (
     <DashboardLayout>
+        <FilesProvider>
       <div className="flex h-[calc(100vh-8rem)] flex-col">
         <Card className="flex-1 flex flex-col h-full">
             <CardHeader className="border-b">
@@ -149,6 +155,7 @@ function ChatPage() {
             </CardFooter>
         </Card>
       </div>
+    </FilesProvider>
     </DashboardLayout>
   );
 }

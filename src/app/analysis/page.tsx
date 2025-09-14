@@ -9,22 +9,34 @@ import { Badge } from '@/components/ui/badge';
 import { analyzeDocument, AnalyzeDocumentOutput } from '@/ai/flows/analyze-document';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
+import { useFiles } from '@/hooks/use-files';
 
 function AnalysisPage() {
   const searchParams = useSearchParams();
   const fileId = searchParams.get('fileId');
   const fileName = searchParams.get('fileName');
+  const { getFileContent } = useFiles();
   
   const [analysisResult, setAnalysisResult] = useState<AnalyzeDocumentOutput | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (fileName) {
+    if (fileId && fileName) {
       setIsLoading(true);
-      // In a real app, you would fetch the document text based on fileId.
-      // For this mock, we are just passing a placeholder text.
-      analyzeDocument({ documentText: `This is a mock document text for: ${fileName}` })
+      const documentText = getFileContent(fileId);
+      
+      if (!documentText) {
+        toast({
+            variant: 'destructive',
+            title: 'File Content Not Found',
+            description: 'Could not retrieve the content for this file.',
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      analyzeDocument({ documentText })
         .then(result => {
           setAnalysisResult(result);
         })
@@ -40,7 +52,7 @@ function AnalysisPage() {
           setIsLoading(false);
         });
     }
-  }, [fileName, toast]);
+  }, [fileId, fileName, getFileContent, toast]);
 
   if (!fileId || !fileName) {
     return (

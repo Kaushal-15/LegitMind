@@ -21,16 +21,10 @@ export function FileUploader() {
   const handleFileChange = (files: FileList | null) => {
     if (files && files[0]) {
       const selectedFile = files[0];
-      if (['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'].includes(selectedFile.type)) {
-        setFile(selectedFile);
-        setProgress(0);
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Invalid File Type',
-          description: 'Please upload a PDF, DOCX, or TXT file.',
-        });
-      }
+      // Loosening file type validation for demonstration purposes, as content is mocked.
+      // In a real app with proper parsing, you'd keep this strict.
+      setFile(selectedFile);
+      setProgress(0);
     }
   };
 
@@ -40,27 +34,28 @@ export function FileUploader() {
     setIsUploading(true);
     setProgress(0);
 
-    // Mock upload
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 95) {
-          return prev;
-        }
-        return prev + 5;
-      });
+    // Mock upload progress
+    const uploadInterval = setInterval(() => {
+      setProgress((prev) => (prev >= 95 ? prev : prev + 5));
     }, 200);
 
-    setTimeout(() => {
-      clearInterval(interval);
+    const fileReader = new FileReader();
+    fileReader.readAsText(file, 'UTF-8');
+    fileReader.onload = (e) => {
+      clearInterval(uploadInterval);
       setProgress(100);
+
+      const fileContent = e.target?.result as string;
 
       const newFile: FileData = {
         id: new Date().toISOString(),
         name: file.name,
         size: `${(file.size / 1024).toFixed(2)} KB`,
         date: new Date().toLocaleDateString('en-CA'),
-        type: file.name.split('.').pop() as 'pdf' | 'docx' | 'txt',
+        type: (file.name.split('.').pop() as 'pdf' | 'docx' | 'txt') || 'txt',
+        content: fileContent,
       };
+      
       addFile(newFile);
 
       setTimeout(() => {
@@ -72,7 +67,18 @@ export function FileUploader() {
         
         router.push('/files');
       }, 500);
-    }, 4000);
+    };
+
+    fileReader.onerror = () => {
+        clearInterval(uploadInterval);
+        setIsUploading(false);
+        toast({
+            variant: "destructive",
+            title: "File Read Error",
+            description: "Could not read the file content.",
+        });
+    }
+
   }, [file, toast, addFile, router]);
 
   const onDragEnter = (e: React.DragEvent<HTMLDivElement>) => {

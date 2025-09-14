@@ -7,6 +7,7 @@ interface FilesContextType {
   files: FileData[];
   addFile: (file: FileData) => void;
   deleteFile: (fileId: string) => void;
+  getFileContent: (fileId: string) => string | null;
 }
 
 const FilesContext = createContext<FilesContextType | undefined>(undefined);
@@ -35,14 +36,38 @@ export const FilesProvider = ({ children }: { children: ReactNode }) => {
 
   const addFile = (file: FileData) => {
     setFiles((prevFiles) => [...prevFiles, file]);
+     if (file.content) {
+      try {
+        window.localStorage.setItem(`file-content-${file.id}`, file.content);
+      } catch (e) {
+        console.error("Could not save file content to localStorage", e);
+      }
+    }
   };
 
   const deleteFile = (fileId: string) => {
     setFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileId));
+    try {
+      window.localStorage.removeItem(`file-content-${fileId}`);
+    } catch(e) {
+      console.error("Could not remove file content from localStorage", e);
+    }
+  };
+
+  const getFileContent = (fileId: string): string | null => {
+     if (typeof window === 'undefined') {
+      return null;
+    }
+    try {
+      return window.localStorage.getItem(`file-content-${fileId}`);
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
   };
 
   return (
-    <FilesContext.Provider value={{ files, addFile, deleteFile }}>
+    <FilesContext.Provider value={{ files, addFile, deleteFile, getFileContent }}>
       {children}
     </FilesContext.Provider>
   );
