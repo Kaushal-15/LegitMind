@@ -62,13 +62,14 @@ function ChatPage() {
       });
       setMessages((prev) => [...prev, { role: 'assistant', content: result.answer }]);
     } catch (error) {
-      console.error('Error chatting with document:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Could not get an answer at this time. Please try again.',
-      });
-      setMessages((prev) => [...prev, { role: 'assistant', content: "I'm sorry, an error occurred. Please try again." }]);
+        const errorMessage = error instanceof Error ? error.message : 'Could not get an answer at this time. Please try again.';
+        console.error('Error chatting with document:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: errorMessage,
+        });
+        setMessages((prev) => [...prev, { role: 'assistant', content: `I'm sorry, an error occurred: ${errorMessage}` }]);
     } finally {
       setIsLoading(false);
     }
