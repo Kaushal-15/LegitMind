@@ -1,0 +1,128 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { File, MoreHorizontal, PenSquare, Trash2, Eye } from 'lucide-react';
+import { files, FileData } from '@/lib/placeholder-data';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+const fileTypeIcons = {
+  pdf: <File className="text-red-500" />,
+  docx: <File className="text-blue-500" />,
+  txt: <File className="text-gray-500" />,
+};
+
+export function FilesTable() {
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleSummarize = (file: FileData) => {
+    toast({
+      title: 'Summarization in Progress',
+      description: `We're summarizing ${file.name}. You'll be notified upon completion.`,
+    });
+    // In a real app, this would trigger the AI flow and then navigate.
+    setTimeout(() => {
+      router.push('/summaries');
+    }, 2000);
+  };
+  
+  const handleView = (file: FileData) => {
+    toast({
+      title: 'Opening Document',
+      description: `Displaying a preview for ${file.name}.`
+    });
+  };
+
+  const handleDelete = (file: FileData) => {
+    toast({
+        variant: "destructive",
+        title: 'File Deleted',
+        description: `${file.name} has been moved to the trash.`,
+    });
+  }
+
+  return (
+    <Card>
+        <CardHeader>
+            <CardTitle className="font-headline text-2xl">My Files</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <Table>
+            <TableHeader>
+                <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead className="hidden md:table-cell">Type</TableHead>
+                <TableHead className="hidden md:table-cell">Size</TableHead>
+                <TableHead className="hidden sm:table-cell">Date Added</TableHead>
+                <TableHead>
+                    <span className="sr-only">Actions</span>
+                </TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {files.map((file) => (
+                <TableRow key={file.id}>
+                    <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                        {fileTypeIcons[file.type]}
+                        <span>{file.name}</span>
+                        </div>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                        <Badge variant="outline" className="uppercase">{file.type}</Badge>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">{file.size}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{file.date}</TableCell>
+                    <TableCell>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                        <Button aria-haspopup="true" size="icon" variant="ghost">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                        </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => handleView(file)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            View
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleSummarize(file)}>
+                            <PenSquare className="mr-2 h-4 w-4" />
+                            Summarize
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(file)}>
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                        </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    </TableCell>
+                </TableRow>
+                ))}
+            </TableBody>
+            </Table>
+      </CardContent>
+    </Card>
+  );
+}
