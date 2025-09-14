@@ -67,7 +67,24 @@ const analyzeDocumentFlow = ai.defineFlow(
     outputSchema: AnalyzeDocumentOutputSchema,
   },
   async input => {
-    const { output } = await prompt(input);
-    return output!;
+    const maxRetries = 3;
+    const delayMs = 1000;
+    
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            const { output } = await prompt(input);
+            return output!;
+        } catch (error) {
+            console.error(`Attempt ${i + 1} failed for analyzeDocumentFlow:`, error);
+            if (i === maxRetries - 1) {
+                // If this is the last retry, re-throw the error
+                throw new Error("The AI model is currently overloaded. Please try again later.");
+            }
+            // Wait for a short delay before retrying
+            await new Promise(resolve => setTimeout(resolve, delayMs));
+        }
+    }
+    // This should not be reached, but as a fallback:
+    throw new Error("Failed to get a response from the AI model after multiple retries.");
   }
 );
