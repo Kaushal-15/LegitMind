@@ -10,13 +10,16 @@ import { SummaryData, AnalysisData, ChatMessage } from '@/lib/placeholder-data';
 
 interface ExportReportProps {
   docName: string;
+  includeSummary: boolean;
   summary: SummaryData | null;
+  includeAnalysis: boolean;
   analysis: AnalysisData | null;
+  includeChat: boolean;
   chatHistory: ChatMessage[];
 }
 
 export const ExportReport = React.forwardRef<HTMLDivElement, ExportReportProps>(
-  ({ docName, summary, analysis, chatHistory }, ref) => {
+  ({ docName, includeSummary, summary, includeAnalysis, analysis, includeChat, chatHistory }, ref) => {
     return (
       <div ref={ref} className="p-10 bg-background" style={{ width: '800px' }}>
         <header className="flex justify-between items-center pb-4 border-b-2 border-primary">
@@ -36,7 +39,7 @@ export const ExportReport = React.forwardRef<HTMLDivElement, ExportReportProps>(
             </CardHeader>
           </Card>
           
-          {summary && (
+          {includeSummary && summary && (
             <Card>
               <CardHeader>
                 <CardTitle className="font-headline text-xl flex items-center gap-2">
@@ -49,7 +52,7 @@ export const ExportReport = React.forwardRef<HTMLDivElement, ExportReportProps>(
             </Card>
           )}
 
-          {analysis && (
+          {includeAnalysis && analysis && (
              <div className="space-y-8">
                 <Card>
                     <CardHeader>
@@ -117,7 +120,7 @@ export const ExportReport = React.forwardRef<HTMLDivElement, ExportReportProps>(
              </div>
           )}
 
-          {chatHistory.length > 0 && (
+          {includeChat && chatHistory.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="font-headline text-xl flex items-center gap-2">
@@ -126,14 +129,13 @@ export const ExportReport = React.forwardRef<HTMLDivElement, ExportReportProps>(
               </CardHeader>
               <CardContent className="space-y-6">
                 {chatHistory.map((message, index) => (
-                   <div key={`chat-${index}`} className={`flex items-start gap-4`}>
-                    {message.role === 'assistant' && (
+                   <div key={`chat-${index}`} className={`flex items-start gap-4 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                    {message.role === 'assistant' ? (
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent">
                             <Bot className="h-5 w-5 text-accent-foreground" />
                         </div>
-                    )}
-                     {message.role === 'user' && (
-                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary ml-auto">
+                    ) : (
+                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary">
                             <User className="h-5 w-5 text-secondary-foreground" />
                         </div>
                      )}
