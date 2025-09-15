@@ -1,25 +1,73 @@
 'use client';
 
 import { useState, useRef, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { Send, FileText, Languages, Bot, User, ChevronsUpDown, FileWarning, Search, BrainCircuit } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Send, FileText, Bot, User, FileWarning, Search, BrainCircuit, MessageSquare } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { chatWithDocument } from '@/ai/flows/chat-with-document';
 import { useToast } from '@/hooks/use-toast';
 import { useFiles, FilesProvider } from '@/hooks/use-files';
-import { ChatMessage } from '@/lib/placeholder-data';
-import { Separator } from '@/components/ui/separator';
+import { ChatMessage, ChatSession } from '@/lib/placeholder-data';
 
-function ChatPageContent() {
+
+function ChatListPage() {
+  const { chats } = useFiles();
+  const router = useRouter();
+
+  const handleSelectChat = (chat: ChatSession) => {
+    router.push(`/chat?fileId=${chat.docId}&fileName=${encodeURIComponent(chat.docName)}`);
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-headline text-2xl flex items-center gap-2">
+            <MessageSquare className="h-6 w-6" /> Document Chats
+          </CardTitle>
+          <CardDescription>
+            Review your past conversations with your documents.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Accordion type="single" collapsible className="w-full">
+            {chats.map((chat) => (
+              <AccordionItem value={`item-${chat.docId}`} key={chat.docId} className="cursor-pointer" onClick={() => handleSelectChat(chat)}>
+                <AccordionTrigger className="hover:no-underline">
+                  <div className="flex items-center gap-3 text-left">
+                    <FileText className="h-5 w-5 shrink-0 text-primary" />
+                    <div>
+                      <p className="font-medium">{chat.docName}</p>
+                      <p className="text-xs text-muted-foreground">Last message: {new Date(chat.lastUpdated).toLocaleString()}</p>
+                    </div>
+                  </div>
+                </AccordionTrigger>
+              </AccordionItem>
+            ))}
+            {chats.length === 0 && (
+              <div className="text-center py-12 text-muted-foreground">
+                <p>No chat history available yet.</p>
+                <p>Start a conversation from the 'My Files' page to see it here.</p>
+              </div>
+            )}
+          </Accordion>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+
+function ChatDetailPage() {
   const searchParams = useSearchParams();
   const fileId = searchParams.get('fileId');
   const fileName = searchParams.get('fileName');
-  const { getFileContent, getChatSession, addMessageToChat } = useFiles();
+  const { getFileContent, getChatSession, addMessageToChat, clearChat } = useFiles();
   
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -90,18 +138,22 @@ function ChatPageContent() {
     }
   };
 
-  if (!fileId || !fileName) {
-    return (
-        <div className="flex h-full flex-col items-center justify-center rounded-lg border-2 border-dashed bg-card/50">
-          <FileWarning className="h-16 w-16 text-muted-foreground" />
-          <h2 className="mt-6 text-2xl font-headline font-semibold">
-            Select a Document to Query
-          </h2>
-          <p className="mt-2 text-center text-muted-foreground">
-            Please go to the 'My Files' page and choose a document to start asking questions.
-          </p>
-        </div>
-    );
+  const handleClearChat = () => {
+    if (fileId) {
+      clearChat(fileId);
+      setMessages([]);
+       if (fileName) {
+        const initialMessage: ChatMessage = {
+          role: 'assistant',
+          content: `Hello! I'm ready to answer your questions about "${fileName}". How can I help you?`,
+        };
+        setMessages([initialMessage]);
+      }
+      toast({
+        title: "Chat Cleared",
+        description: "Your conversation history for this document has been cleared.",
+      })
+    }
   }
 
   return (
@@ -147,7 +199,7 @@ function ChatPageContent() {
                 </div>
                  <div className="flex gap-2">
                     <Button variant="outline" size="sm">Export as PDF</Button>
-                    <Button variant="destructive" size="sm">Clear Chat</Button>
+                    <Button variant="destructive" size="sm" onClick={handleClearChat}>Clear Chat</Button>
                 </div>
             </CardHeader>
             <CardContent className="flex-1 p-0">
@@ -209,6 +261,16 @@ function ChatPageContent() {
         </Card>
       </div>
   );
+}
+
+function ChatPageContent() {
+  const searchParams = useSearchParams();
+  const fileId = searchParams.get('fileId');
+
+  if (fileId) {
+    return <ChatDetailPage />;
+  }
+  return <ChatListPage />;
 }
 
 

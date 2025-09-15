@@ -17,6 +17,7 @@ interface FilesContextType {
   chats: ChatSession[];
   getChatSession: (docId: string) => ChatSession | undefined;
   addMessageToChat: (docId: string, docName: string, message: ChatMessage) => void;
+  clearChat: (docId: string) => void;
 }
 
 const FilesContext = createContext<FilesContextType | undefined>(undefined);
@@ -160,6 +161,18 @@ export const FilesProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const clearChat = (docId: string) => {
+    setChats(prevChats => {
+      const chatIndex = prevChats.findIndex(chat => chat.docId === docId);
+      if (chatIndex > -1) {
+        const updatedChats = [...prevChats];
+        updatedChats[chatIndex].messages = [];
+        return updatedChats;
+      }
+      return prevChats;
+    })
+  }
+
   const contextValue: FilesContextType = {
     files,
     addFile,
@@ -172,7 +185,8 @@ export const FilesProvider = ({ children }: { children: ReactNode }) => {
     getAnalysis,
     chats,
     getChatSession,
-    addMessageToChat
+    addMessageToChat,
+    clearChat
   };
 
   return (

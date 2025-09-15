@@ -33,12 +33,20 @@ const RiskSchema = z.object({
 });
 
 
-const AnalyzeDocumentOutputSchema = z.object({
+export const AnalyzeDocumentOutputSchema = z.object({
   clauses: z.array(ClauseSchema).describe('Key clauses identified in the document.'),
   obligations: z.array(ObligationSchema).describe('Specific obligations for each party.'),
   risks: z.array(RiskSchema).describe('Potential risks and compliance red flags.'),
 });
 export type AnalyzeDocumentOutput = z.infer<typeof AnalyzeDocumentOutputSchema>;
+
+export type AnalysisData = {
+    id: string;
+    docId: string;
+    docName: string;
+    analysis: AnalyzeDocumentOutput;
+    date: string;
+};
 
 export async function analyzeDocument(input: AnalyzeDocumentInput): Promise<AnalyzeDocumentOutput> {
   return analyzeDocumentFlow(input);

@@ -1,17 +1,66 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { FileText, Shield, AlertTriangle, FileWarning, Loader2, ListOrdered, UserCheck } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { FileText, Shield, AlertTriangle, FileWarning, Loader2, ListOrdered, UserCheck, Microscope } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/dashboard-layout';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AnalyzeDocumentOutput } from '@/ai/flows/analyze-document';
+import { AnalyzeDocumentOutput, AnalysisData } from '@/ai/flows/analyze-document';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { useFiles, FilesProvider } from '@/hooks/use-files';
+import { Accordion, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
-function AnalysisPageContent() {
+function AnalysisListPage() {
+    const { analyses } = useFiles();
+    const router = useRouter();
+
+    const handleSelectAnalysis = (analysis: AnalysisData) => {
+        router.push(`/analysis?fileId=${analysis.docId}&fileName=${encodeURIComponent(analysis.docName)}`);
+    }
+
+    return (
+         <div className="max-w-4xl mx-auto">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline text-2xl flex items-center gap-2">
+                        <Microscope className="h-6 w-6" /> Document Analyses
+                    </CardTitle>
+                    <CardDescription>
+                        Review AI-generated analyses of your uploaded documents.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Accordion type="single" collapsible className="w-full">
+                    {analyses.map((analysis) => (
+                        <AccordionItem value={`item-${analysis.id}`} key={analysis.id} className="cursor-pointer" onClick={() => handleSelectAnalysis(analysis)}>
+                            <AccordionTrigger className="hover:no-underline">
+                                <div className="flex items-center gap-3 text-left">
+                                    <FileText className="h-5 w-5 shrink-0 text-primary" />
+                                    <div>
+                                        <p className="font-medium">{analysis.docName}</p>
+                                        <p className="text-xs text-muted-foreground">Analyzed on: {analysis.date}</p>
+                                    </div>
+                                </div>
+                            </AccordionTrigger>
+                        </AccordionItem>
+                    ))}
+                    {analyses.length === 0 && (
+                        <div className="text-center py-12 text-muted-foreground">
+                            <p>No analyses available yet.</p>
+                            <p>Upload a document to see its analysis here.</p>
+                        </div>
+                    )}
+                    </Accordion>
+                </CardContent>
+            </Card>
+        </div>
+    )
+}
+
+
+function AnalysisDetailPage() {
   const searchParams = useSearchParams();
   const fileId = searchParams.get('fileId');
   const fileName = searchParams.get('fileName');
@@ -28,8 +77,6 @@ function AnalysisPageContent() {
         setAnalysisResult(storedAnalysis.analysis);
         setIsLoading(false);
       } else {
-        // This could be a case where analysis is still running or failed.
-        // For now, we assume it should be present if navigated.
         toast({
           variant: 'destructive',
           title: 'Analysis Not Found',
@@ -50,20 +97,6 @@ function AnalysisPageContent() {
           <h2 className="mt-6 text-2xl font-headline font-semibold">
             Loading Analysis...
           </h2>
-        </div>
-    );
-  }
-
-  if (!fileId || !fileName) {
-    return (
-        <div className="flex h-full flex-col items-center justify-center rounded-lg border-2 border-dashed bg-card">
-          <FileWarning className="h-16 w-16 text-muted-foreground" />
-          <h2 className="mt-6 text-2xl font-headline font-semibold">
-            Select a Document to View Analysis
-          </h2>
-          <p className="mt-2 text-center text-muted-foreground">
-            Please go to the 'My Files' page and choose a document to see its analysis.
-          </p>
         </div>
     );
   }
@@ -162,6 +195,17 @@ function AnalysisPageContent() {
       </div>
   );
 }
+
+function AnalysisPageContent() {
+    const searchParams = useSearchParams();
+    const fileId = searchParams.get('fileId');
+
+    if (fileId) {
+        return <AnalysisDetailPage />;
+    }
+    return <AnalysisListPage />;
+}
+
 
 function AnalysisPage() {
     return (
