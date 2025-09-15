@@ -106,15 +106,14 @@ function ChatPageContent() {
 
   return (
       <div className="flex h-[calc(100vh-8rem)] flex-col gap-6">
-        {/* Top Query Bar */}
-        <Card className="shadow-md">
+        <Card className="shadow-md border-primary/20">
             <CardHeader>
-                <CardTitle className="font-headline text-2xl flex items-center gap-3">
+                <CardTitle className="font-headline text-2xl flex items-center gap-3 text-primary">
                     <Search className="h-6 w-6 text-accent" />
                     Ask About: {fileName}
                 </CardTitle>
                  <CardDescription>
-                    Use natural language to ask questions about your document. Autocomplete suggestions will appear here.
+                    Use natural language to ask questions about your document. Suggestions may appear here.
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -135,21 +134,20 @@ function ChatPageContent() {
             </CardContent>
         </Card>
 
-        {/* Conversation History */}
-        <Card className="flex-1 flex flex-col h-full shadow-md">
-            <CardHeader className="border-b flex-row justify-between items-center">
+        <Card className="flex-1 flex flex-col h-full shadow-md border-primary/20">
+            <CardHeader className="border-b border-primary/10 flex-row justify-between items-center">
                 <div>
-                    <CardTitle className="font-headline text-xl flex items-center gap-2">
-                        <BrainCircuit className="h-5 w-5 text-primary" />
+                    <CardTitle className="font-headline text-xl flex items-center gap-2 text-primary">
+                        <BrainCircuit className="h-5 w-5" />
                         Conversation History
                     </CardTitle>
                     <CardDescription className="pt-1">
                         Review the AI's responses and cited clauses.
                     </CardDescription>
                 </div>
-                 <div>
-                    {/* <Button variant="outline" size="sm" className="mr-2">Export as PDF</Button>
-                    <Button variant="destructive" size="sm">Clear Chat</Button> */}
+                 <div className="flex gap-2">
+                    <Button variant="outline" size="sm">Export as PDF</Button>
+                    <Button variant="destructive" size="sm">Clear Chat</Button>
                 </div>
             </CardHeader>
             <CardContent className="flex-1 p-0">
@@ -159,7 +157,7 @@ function ChatPageContent() {
                         <div key={index} className={`flex items-start gap-4 ${message.role === 'user' ? 'justify-end' : ''}`}>
                              {message.role === 'assistant' && (
                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent border-2 border-amber-300">
-                                    <Bot className="h-5 w-5 text-amber-900" />
+                                    <Bot className="h-5 w-5 text-accent-foreground" />
                                 </div>
                              )}
 
@@ -181,8 +179,8 @@ function ChatPageContent() {
                                ) : (
                                 <div className="bg-secondary rounded-lg p-3 ml-auto flex items-center gap-4">
                                     <p className="text-secondary-foreground">{message.content}</p>
-                                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary-foreground/10 border">
-                                        <User className="h-5 w-5 text-secondary-foreground" />
+                                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-card border">
+                                        <User className="h-5 w-5 text-foreground" />
                                     </div>
                                 </div>
                                )}
@@ -192,7 +190,7 @@ function ChatPageContent() {
                      {isLoading && (
                         <div className="flex items-start gap-4">
                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent border-2 border-amber-300">
-                                <Bot className="h-5 w-5 text-amber-900" />
+                                <Bot className="h-5 w-5 text-accent-foreground" />
                             </div>
                             <Card className="bg-primary/5 border border-primary/20 w-full max-w-[85%]">
                                  <CardContent className="p-4">
