@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { FileData, SummaryData, ChatSession, ChatMessage, AnalysisData } from '@/lib/placeholder-data';
-import { AnalyzeDocumentOutput } from '@/ai/flows/analyze-document';
+import type { AnalyzeDocumentOutput } from '@/lib/placeholder-data';
 
 interface FilesContextType {
   files: FileData[];

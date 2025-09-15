@@ -9,7 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { useFiles } from '@/hooks/use-files';
 import { FileData } from '@/lib/placeholder-data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { analyzeDocument, AnalyzeDocumentOutput } from '@/ai/flows/analyze-document';
+import { analyzeDocument } from '@/ai/flows/analyze-document';
 
 
 export function FileUploader() {

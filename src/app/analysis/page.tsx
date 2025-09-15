@@ -6,7 +6,7 @@ import { FileText, Shield, AlertTriangle, FileWarning, Loader2, ListOrdered, Use
 import DashboardLayout from '@/components/dashboard/dashboard-layout';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AnalyzeDocumentOutput, AnalysisData } from '@/ai/flows/analyze-document';
+import type { AnalyzeDocumentOutput, AnalysisData } from '@/lib/placeholder-data';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { useFiles, FilesProvider } from '@/hooks/use-files';
