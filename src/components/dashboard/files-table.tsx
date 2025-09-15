@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { File, MoreHorizontal, PenSquare, Trash2, Eye, MessageSquare, Microscope, Loader2 } from 'lucide-react';
+import { File, MoreHorizontal, PenSquare, Trash2, Eye, MessageSquare, Microscope, Loader2, Search } from 'lucide-react';
 import { FileData } from '@/lib/placeholder-data';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,7 +25,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useFiles } from '@/hooks/use-files';
 import { aiSummarizeDocument } from '@/ai/flows/ai-summarize-document';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { Input } from '../ui/input';
 
 const fileTypeIcons = {
   pdf: <File className="text-red-500" />,
@@ -38,6 +39,11 @@ export function FilesTable() {
   const { toast } = useToast();
   const { files, deleteFile, getFileContent, addSummary } = useFiles();
   const [summarizingId, setSummarizingId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredFiles = useMemo(() => {
+    return files.filter(file => file.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  }, [files, searchTerm]);
 
   const handleAskQuestion = (file: FileData) => {
     router.push(`/chat?fileId=${file.id}&fileName=${encodeURIComponent(file.name)}`);
@@ -101,80 +107,88 @@ export function FilesTable() {
   }
 
   return (
-    <Card>
-        <CardHeader>
-            <CardTitle className="font-headline text-2xl">My Files</CardTitle>
-            <CardDescription>Your uploaded documents will appear here.</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <Table>
-            <TableHeader>
-                <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead className="hidden md:table-cell">Type</TableHead>
-                <TableHead className="hidden md:table-cell">Size</TableHead>
-                <TableHead className="hidden sm:table-cell">Date Added</TableHead>
-                <TableHead>
-                    <span className="sr-only">Actions</span>
-                </TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {files.length === 0 && (
+    <div className="space-y-4">
+        <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+                placeholder="Search documents..." 
+                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+            />
+        </div>
+        <Card>
+            <CardContent className="pt-6">
+                <Table>
+                <TableHeader>
                     <TableRow>
-                        <TableCell colSpan={5} className="h-24 text-center">
-                        No files uploaded yet.
+                    <TableHead>Name</TableHead>
+                    <TableHead className="hidden md:table-cell">Type</TableHead>
+                    <TableHead className="hidden md:table-cell">Size</TableHead>
+                    <TableHead className="hidden sm:table-cell">Date Added</TableHead>
+                    <TableHead>
+                        <span className="sr-only">Actions</span>
+                    </TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {filteredFiles.length === 0 ? (
+                        <TableRow>
+                            <TableCell colSpan={5} className="h-24 text-center">
+                            No documents found.
+                            </TableCell>
+                        </TableRow>
+                    ) : (
+                    filteredFiles.map((file) => (
+                    <TableRow key={file.id}>
+                        <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                            {fileTypeIcons[file.type]}
+                            <span>{file.name}</span>
+                            </div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                            <Badge variant="outline" className="uppercase">{file.type}</Badge>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">{file.size}</TableCell>
+                        <TableCell className="hidden sm:table-cell">{file.date}</TableCell>
+                        <TableCell>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                            <Button aria-haspopup="true" size="icon" variant="ghost" disabled={!!summarizingId}>
+                            {summarizingId === file.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoreHorizontal className="h-4 w-4" />}
+                                <span className="sr-only">Toggle menu</span>
+                            </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => handleAskQuestion(file)}>
+                                <MessageSquare className="mr-2 h-4 w-4" />
+                                Ask Question
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleAnalyze(file)}>
+                                <Microscope className="mr-2 h-4 w-4" />
+                                Analyze
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleSummarize(file)}>
+                                <PenSquare className="mr-2 h-4 w-4" />
+                                Summarize
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(file)}>
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                            </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                         </TableCell>
                     </TableRow>
+                    ))
                 )}
-                {files.map((file) => (
-                <TableRow key={file.id}>
-                    <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                        {fileTypeIcons[file.type]}
-                        <span>{file.name}</span>
-                        </div>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                        <Badge variant="outline" className="uppercase">{file.type}</Badge>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">{file.size}</TableCell>
-                    <TableCell className="hidden sm:table-cell">{file.date}</TableCell>
-                    <TableCell>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                        <Button aria-haspopup="true" size="icon" variant="ghost" disabled={!!summarizingId}>
-                           {summarizingId === file.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoreHorizontal className="h-4 w-4" />}
-                            <span className="sr-only">Toggle menu</span>
-                        </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => handleAskQuestion(file)}>
-                            <MessageSquare className="mr-2 h-4 w-4" />
-                            Ask Question
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleAnalyze(file)}>
-                            <Microscope className="mr-2 h-4 w-4" />
-                            Analyze
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleSummarize(file)}>
-                            <PenSquare className="mr-2 h-4 w-4" />
-                            Summarize
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(file)}>
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                        </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                    </TableCell>
-                </TableRow>
-                ))}
-            </TableBody>
-            </Table>
-      </CardContent>
-    </Card>
+                </TableBody>
+                </Table>
+        </CardContent>
+        </Card>
+    </div>
   );
 }

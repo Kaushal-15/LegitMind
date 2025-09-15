@@ -11,8 +11,6 @@ import {
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/upload', icon: Upload, label: 'Upload Documents' },
-  { href: '/files', icon: File, label: 'My Files' },
   { href: '/summaries', icon: BookText, label: 'Summaries' },
   { href: '/chat', icon: MessageSquare, label: 'Chat' },
   { href: '/analysis', icon: Microscope, label: 'Analysis' },
@@ -27,7 +25,7 @@ export function SidebarNav() {
         <SidebarMenuItem key={item.href}>
           <SidebarMenuButton
             asChild
-            isActive={pathname.startsWith(item.href) && (item.href !== '/analysis' || pathname === '/analysis')}
+            isActive={pathname.startsWith(item.href)}
             tooltip={item.label}
             className="justify-start"
           >

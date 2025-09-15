@@ -1,7 +1,7 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
-import { Inter } from 'next/font/google';
+import { Inter, Sorts_Mill_Goudy } from 'next/font/google';
 
 export const metadata: Metadata = {
   title: 'LegitMind MVP',
@@ -9,6 +9,11 @@ export const metadata: Metadata = {
 };
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const sortsMillGoudy = Sorts_Mill_Goudy({
+    subsets: ['latin'],
+    weight: ['400'],
+    variable: '--font-sorts-mill-goudy',
+})
 
 
 export default function RootLayout({
@@ -18,17 +23,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@6..72,400;500;600;700&display=swap" rel="stylesheet" />
-      </head>
-      <body className={`font-body antialiased ${inter.variable}`}>
+      <body className={`font-body antialiased ${inter.variable} ${sortsMillGoudy.variable}`}>
         {children}
         <Toaster />
       </body>
     </html>
   );
 }
-
-    

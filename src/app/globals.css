@@ -4,78 +4,78 @@
 
 @layer base {
   :root {
-    --background: 20 20% 98%;
-    --foreground: 24 10% 3.9%;
-    --card: 20 20% 96%;
-    --card-foreground: 24 10% 3.9%;
-    --popover: 20 20% 96%;
-    --popover-foreground: 24 10% 3.9%;
-    --primary: 150 75% 15%; /* Deep Forest Green */
-    --primary-foreground: 40 50% 95%;
-    --secondary: 20 15% 92%;
-    --secondary-foreground: 24 10% 3.9%;
-    --muted: 20 15% 92%;
-    --muted-foreground: 24 5.9% 55%;
-    --accent: 30 80% 55%; /* Gold */
-    --accent-foreground: 24 10% 3.9%;
+    --background: 40 75% 97%; /* Parchment */
+    --foreground: 25 20% 15%; /* Dark Brown/Charcoal */
+    --card: 0 0% 100%;
+    --card-foreground: 25 20% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 25 20% 15%;
+    --primary: 24 84% 45%; /* Burnt Orange */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 20% 94%;
+    --secondary-foreground: 25 20% 15%;
+    --muted: 40 20% 94%;
+    --muted-foreground: 25 15% 45%;
+    --accent: 24 84% 45%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 20 20% 80%;
-    --input: 20 15% 94%;
-    --ring: 30 80% 55%;
+    --border: 40 20% 88%;
+    --input: 40 20% 94%;
+    --ring: 24 84% 45%;
     --radius: 0.5rem;
 
-    --chart-1: 150 75% 15%;
-    --chart-2: 30 80% 55%;
-    --chart-3: 200 70% 50%;
+    --chart-1: 24 84% 45%;
+    --chart-2: 150 75% 35%;
+    --chart-3: 30 80% 55%;
     --chart-4: 280 65% 55%;
     --chart-5: 0 84% 60%;
-    
-    --sidebar-background: 150 75% 8%;
-    --sidebar-foreground: 40 50% 90%;
-    --sidebar-primary: 30 80% 55%;
-    --sidebar-primary-foreground: 150 75% 8%;
-    --sidebar-accent: 150 75% 15%;
-    --sidebar-accent-foreground: 40 50% 90%;
-    --sidebar-border: 150 75% 15%;
-    --sidebar-ring: 30 80% 55%;
+
+    --sidebar-background: 25 25% 12%;
+    --sidebar-foreground: 40 20% 90%;
+    --sidebar-primary: 24 84% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 25 20% 20%;
+    --sidebar-accent-foreground: 40 20% 90%;
+    --sidebar-border: 25 20% 20%;
+    --sidebar-ring: 24 84% 45%;
   }
 
   .dark {
-    --background: 150 75% 4%;
-    --foreground: 40 50% 90%;
-    --card: 150 75% 7%;
-    --card-foreground: 40 50% 90%;
-    --popover: 150 75% 7%;
-    --popover-foreground: 40 50% 90%;
-    --primary: 150 80% 30%;
-    --primary-foreground: 40 50% 98%;
-    --secondary: 150 75% 10%;
-    --secondary-foreground: 40 50% 90%;
-    --muted: 150 75% 10%;
+    --background: 25 25% 10%;
+    --foreground: 40 20% 90%;
+    --card: 25 25% 13%;
+    --card-foreground: 40 20% 90%;
+    --popover: 25 25% 13%;
+    --popover-foreground: 40 20% 90%;
+    --primary: 24 80% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 25 20% 20%;
+    --secondary-foreground: 40 20% 90%;
+    --muted: 25 20% 20%;
     --muted-foreground: 40 20% 65%;
-    --accent: 30 80% 55%;
-    --accent-foreground: 24 10% 3.9%;
+    --accent: 24 80% 55%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 20 20% 30%;
-    --input: 150 75% 10%;
-    --ring: 30 80% 55%;
-
-    --chart-1: 150 80% 30%;
-    --chart-2: 30 80% 55%;
-    --chart-3: 200 70% 50%;
+    --border: 25 20% 25%;
+    --input: 25 20% 20%;
+    --ring: 24 80% 55%;
+    
+    --chart-1: 24 80% 55%;
+    --chart-2: 150 70% 40%;
+    --chart-3: 30 80% 55%;
     --chart-4: 280 65% 55%;
     --chart-5: 0 70% 50%;
 
-    --sidebar-background: 150 75% 4%;
-    --sidebar-foreground: 40 50% 90%;
-    --sidebar-primary: 30 80% 55%;
-    --sidebar-primary-foreground: 150 75% 8%;
-    --sidebar-accent: 150 75% 10%;
-    --sidebar-accent-foreground: 40 50% 90%;
-    --sidebar-border: 150 75% 10%;
-    --sidebar-ring: 30 80% 55%;
+    --sidebar-background: 25 25% 10%;
+    --sidebar-foreground: 40 20% 90%;
+    --sidebar-primary: 24 80% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 25 20% 20%;
+    --sidebar-accent-foreground: 40 20% 90%;
+    --sidebar-border: 25 20% 20%;
+    --sidebar-ring: 24 80% 55%;
   }
 }
 
