@@ -68,7 +68,7 @@ export function FilesTable() {
         docId: file.id,
         docName: file.name,
         summary: result.summary,
-        date: new Date().toLocaleDateString('en-CA'),
+        date: new Date().toLocaleString(),
       });
        toast({
         title: 'Summarization Complete',

@@ -51,7 +51,7 @@ export function FileUploader() {
         id: new Date().toISOString(),
         name: file.name,
         size: `${(file.size / 1024).toFixed(2)} KB`,
-        date: new Date().toLocaleDateString('en-CA'),
+        date: new Date().toLocaleString(),
         type: (file.name.split('.').pop() as 'pdf' | 'docx' | 'txt') || 'txt',
         content: fileContent,
       };
