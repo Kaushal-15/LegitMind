@@ -156,19 +156,14 @@ function ChatPageContent() {
                 <ScrollArea className="h-[45vh] p-6" ref={scrollAreaRef}>
                     <div className="space-y-8">
                     {messages.map((message, index) => (
-                        <div key={index} className={`flex items-start gap-4 ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                        <div key={index} className={`flex items-start gap-4 ${message.role === 'user' ? 'justify-end' : ''}`}>
                              {message.role === 'assistant' && (
                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent border-2 border-amber-300">
                                     <Bot className="h-5 w-5 text-amber-900" />
                                 </div>
                              )}
-                             {message.role === 'user' && (
-                                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary border">
-                                    <User className="h-5 w-5 text-secondary-foreground" />
-                                </div>
-                             )}
 
-                            <div className={`w-full max-w-[85%] rounded-lg text-sm`}>
+                            <div className={`w-full max-w-[85%]`}>
                                {message.role === 'assistant' ? (
                                     <Card className="bg-primary/5 border border-primary/20">
                                         <CardContent className="p-4">
@@ -184,8 +179,11 @@ function ChatPageContent() {
                                         </CardContent>
                                     </Card>
                                ) : (
-                                <div className="bg-secondary rounded-lg p-3">
+                                <div className="bg-secondary rounded-lg p-3 ml-auto flex items-center gap-4">
                                     <p className="text-secondary-foreground">{message.content}</p>
+                                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary-foreground/10 border">
+                                        <User className="h-5 w-5 text-secondary-foreground" />
+                                    </div>
                                 </div>
                                )}
                             </div>
