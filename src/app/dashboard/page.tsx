@@ -1,8 +1,6 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { FileUploader } from '@/components/dashboard/file-uploader';
-import { GuidanceTool } from '@/components/dashboard/guidance-tool';
 import { FilesProvider, useFiles } from '@/hooks/use-files';
 import DashboardLayout from '@/components/dashboard/dashboard-layout';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
@@ -126,8 +124,8 @@ function DashboardPageContent() {
             </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
-            <Card className="lg:col-span-3">
+        <div className="grid grid-cols-1 gap-8 items-start">
+            <Card>
                 <CardHeader>
                     <CardTitle>Risk Distribution</CardTitle>
                     <CardDescription>
@@ -151,17 +149,7 @@ function DashboardPageContent() {
                     </ResponsiveContainer>
                 </CardContent>
             </Card>
-            <div className="lg:col-span-2">
-                <FileUploader />
-            </div>
         </div>
-
-         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-           <div className="lg:col-span-3">
-                <GuidanceTool />
-           </div>
-        </div>
-
     </div>
   );
 }
