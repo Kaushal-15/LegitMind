@@ -11,6 +11,7 @@ interface FilesContextType {
   getFileContent: (fileId: string) => string | null;
   summaries: SummaryData[];
   addSummary: (summary: SummaryData) => void;
+  getSummary: (docId: string) => SummaryData | undefined;
   analyses: AnalysisData[];
   addAnalysis: (analysis: AnalysisData) => void;
   getAnalysis: (docId: string) => AnalysisData | undefined;
@@ -126,6 +127,10 @@ export const FilesProvider = ({ children }: { children: ReactNode }) => {
   const addSummary = (summary: SummaryData) => {
     setSummaries((prevSummaries) => [summary, ...prevSummaries.filter(s => s.docId !== summary.docId)]);
   }
+
+  const getSummary = (docId: string): SummaryData | undefined => {
+    return summaries.find(summary => summary.docId === docId);
+  }
   
   const addAnalysis = (analysis: AnalysisData) => {
     setAnalyses((prevAnalyses) => [analysis, ...prevAnalyses.filter(a => a.docId !== analysis.docId)]);
@@ -180,6 +185,7 @@ export const FilesProvider = ({ children }: { children: ReactNode }) => {
     getFileContent,
     summaries,
     addSummary,
+    getSummary,
     analyses,
     addAnalysis,
     getAnalysis,

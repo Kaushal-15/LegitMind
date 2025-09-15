@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Send, FileText, Bot, User, FileWarning, Search, BrainCircuit, MessageSquare } from 'lucide-react';
+import { Send, FileText, Bot, User, FileWarning, Search, BrainCircuit, MessageSquare, Download } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +12,10 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { chatWithDocument } from '@/ai/flows/chat-with-document';
 import { useToast } from '@/hooks/use-toast';
 import { useFiles, FilesProvider } from '@/hooks/use-files';
-import { ChatMessage, ChatSession } from '@/lib/placeholder-data';
+import { ChatMessage, ChatSession, SummaryData, AnalysisData } from '@/lib/placeholder-data';
+import { ExportReport } from '@/components/dashboard/export-report';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 
 function ChatListPage() {
@@ -67,13 +70,19 @@ function ChatDetailPage() {
   const searchParams = useSearchParams();
   const fileId = searchParams.get('fileId');
   const fileName = searchParams.get('fileName');
-  const { getFileContent, getChatSession, addMessageToChat, clearChat } = useFiles();
+  const { getFileContent, getChatSession, addMessageToChat, clearChat, getSummary, getAnalysis } = useFiles();
   
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [summary, setSummary] = useState<SummaryData | null>(null);
+  const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
+
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const reportRef = useRef<HTMLDivElement>(null);
+
 
   useEffect(() => {
     if (fileId) {
@@ -87,14 +96,51 @@ function ChatDetailPage() {
         };
         setMessages([initialMessage]);
       }
+      setSummary(getSummary(fileId) ?? null);
+      setAnalysis(getAnalysis(fileId) ?? null);
     }
-  }, [fileId, fileName, getChatSession]);
+  }, [fileId, fileName, getChatSession, getSummary, getAnalysis]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTo({ top: scrollAreaRef.current.scrollHeight, behavior: 'smooth' });
     }
   }, [messages]);
+
+  const handleExport = async () => {
+    if (!reportRef.current) return;
+    setIsExporting(true);
+    toast({
+      title: "Exporting Report",
+      description: "Generating PDF report, please wait...",
+    });
+
+    try {
+        const canvas = await html2canvas(reportRef.current, {
+            scale: 2, // Higher scale for better quality
+        });
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF({
+            orientation: 'p',
+            unit: 'px',
+            format: [canvas.width, canvas.height]
+        });
+        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+        
+        const safeFileName = fileName?.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'document';
+        pdf.save(`${safeFileName}_report.pdf`);
+    } catch (error) {
+        console.error("Failed to export PDF", error);
+        toast({
+            variant: "destructive",
+            title: "Export Failed",
+            description: "Could not generate the PDF report.",
+        });
+    } finally {
+        setIsExporting(false);
+    }
+  };
+
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -158,6 +204,16 @@ function ChatDetailPage() {
 
   return (
       <div className="flex h-[calc(100vh-8rem)] flex-col gap-6">
+        {/* Hidden component for PDF generation */}
+        <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
+            <ExportReport
+              ref={reportRef}
+              docName={fileName ?? 'N/A'}
+              summary={summary}
+              analysis={analysis}
+              chatHistory={messages}
+            />
+        </div>
         <Card className="shadow-md border-primary/20">
             <CardHeader>
                 <CardTitle className="font-headline text-2xl flex items-center gap-3 text-primary">
@@ -198,7 +254,10 @@ function ChatDetailPage() {
                     </CardDescription>
                 </div>
                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">Export as PDF</Button>
+                    <Button variant="outline" size="sm" onClick={handleExport} disabled={isExporting}>
+                        <Download className="mr-2 h-4 w-4" />
+                        {isExporting ? 'Exporting...' : 'Export as PDF'}
+                    </Button>
                     <Button variant="destructive" size="sm" onClick={handleClearChat}>Clear Chat</Button>
                 </div>
             </CardHeader>
