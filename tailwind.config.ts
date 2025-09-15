@@ -10,7 +10,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Literata', 'serif'],
+        body: ['var(--font-inter)', 'sans-serif'],
         headline: ['Literata', 'serif'],
         code: ['monospace'],
       },
@@ -95,3 +95,5 @@ export default {
   },
   plugins: [require('tailwindcss-animate')],
 } satisfies Config;
+
+    
