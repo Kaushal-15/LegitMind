@@ -1,5 +1,6 @@
+'use client';
+
 import { BookText, FileText } from 'lucide-react';
-import { summaries } from '@/lib/placeholder-data';
 import {
   Accordion,
   AccordionContent,
@@ -8,11 +9,14 @@ import {
 } from '@/components/ui/accordion';
 import DashboardLayout from '@/components/dashboard/dashboard-layout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useFiles, FilesProvider } from '@/hooks/use-files';
 
-export default function SummariesPage() {
+
+function SummariesPageContent() {
+  const { summaries } = useFiles();
+
   return (
-    <DashboardLayout>
-      <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto">
         <Card>
             <CardHeader>
                 <CardTitle className="font-headline text-2xl flex items-center gap-2">
@@ -50,6 +54,15 @@ export default function SummariesPage() {
             </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
   );
+}
+
+export default function SummariesPage() {
+    return (
+        <DashboardLayout>
+            <FilesProvider>
+                <SummariesPageContent />
+            </FilesProvider>
+        </DashboardLayout>
+    )
 }

@@ -1,13 +1,15 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { FileData } from '@/lib/placeholder-data';
+import { FileData, SummaryData } from '@/lib/placeholder-data';
 
 interface FilesContextType {
   files: FileData[];
   addFile: (file: FileData) => void;
   deleteFile: (fileId: string) => void;
   getFileContent: (fileId: string) => string | null;
+  summaries: SummaryData[];
+  addSummary: (summary: SummaryData) => void;
 }
 
 const FilesContext = createContext<FilesContextType | undefined>(undefined);
@@ -26,6 +28,20 @@ export const FilesProvider = ({ children }: { children: ReactNode }) => {
     }
   });
 
+  const [summaries, setSummaries] = useState<SummaryData[]>(() => {
+    if (typeof window === 'undefined') {
+      return [];
+    }
+    try {
+      const item = window.localStorage.getItem('summaries');
+      return item ? JSON.parse(item) : [];
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
+  });
+
+
   useEffect(() => {
     try {
       window.localStorage.setItem('files', JSON.stringify(files));
@@ -33,6 +49,14 @@ export const FilesProvider = ({ children }: { children: ReactNode }) => {
       console.error(error);
     }
   }, [files]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('summaries', JSON.stringify(summaries));
+    } catch (error) {
+      console.error(error);
+    }
+  }, [summaries]);
 
   const addFile = (file: FileData) => {
     setFiles((prevFiles) => [...prevFiles, file]);
@@ -47,6 +71,7 @@ export const FilesProvider = ({ children }: { children: ReactNode }) => {
 
   const deleteFile = (fileId: string) => {
     setFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileId));
+    setSummaries((prevSummaries) => prevSummaries.filter((summary) => summary.docId !== fileId));
     try {
       window.localStorage.removeItem(`file-content-${fileId}`);
     } catch(e) {
@@ -66,8 +91,12 @@ export const FilesProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const addSummary = (summary: SummaryData) => {
+    setSummaries((prevSummaries) => [summary, ...prevSummaries.filter(s => s.docId !== summary.docId)]);
+  }
+
   return (
-    <FilesContext.Provider value={{ files, addFile, deleteFile, getFileContent }}>
+    <FilesContext.Provider value={{ files, addFile, deleteFile, getFileContent, summaries, addSummary }}>
       {children}
     </FilesContext.Provider>
   );

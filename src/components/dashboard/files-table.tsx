@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { File, MoreHorizontal, PenSquare, Trash2, Eye, MessageSquare, Microscope } from 'lucide-react';
+import { File, MoreHorizontal, PenSquare, Trash2, Eye, MessageSquare, Microscope, Loader2 } from 'lucide-react';
 import { FileData } from '@/lib/placeholder-data';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,6 +24,8 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useFiles } from '@/hooks/use-files';
+import { aiSummarizeDocument } from '@/ai/flows/ai-summarize-document';
+import { useState } from 'react';
 
 const fileTypeIcons = {
   pdf: <File className="text-red-500" />,
@@ -34,21 +36,55 @@ const fileTypeIcons = {
 export function FilesTable() {
   const router = useRouter();
   const { toast } = useToast();
-  const { files, deleteFile } = useFiles();
+  const { files, deleteFile, getFileContent, addSummary } = useFiles();
+  const [summarizingId, setSummarizingId] = useState<string | null>(null);
 
   const handleAskQuestion = (file: FileData) => {
     router.push(`/chat?fileId=${file.id}&fileName=${encodeURIComponent(file.name)}`);
   };
 
-  const handleSummarize = (file: FileData) => {
+  const handleSummarize = async (file: FileData) => {
+    setSummarizingId(file.id);
     toast({
       title: 'Summarization in Progress',
-      description: `We're summarizing ${file.name}. You'll be notified upon completion.`,
+      description: `We're summarizing ${file.name}. This may take a moment.`,
     });
-    // In a real app, this would trigger the AI flow and then navigate.
-    setTimeout(() => {
+
+    const documentText = getFileContent(file.id);
+    if (!documentText) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Could not read the file content to generate a summary.',
+      });
+      setSummarizingId(null);
+      return;
+    }
+
+    try {
+      const result = await aiSummarizeDocument({ documentText });
+      addSummary({
+        id: `summary-${file.id}`,
+        docId: file.id,
+        docName: file.name,
+        summary: result.summary,
+        date: new Date().toLocaleDateString('en-CA'),
+      });
+       toast({
+        title: 'Summarization Complete',
+        description: `Summary for ${file.name} is ready.`,
+      });
       router.push('/summaries');
-    }, 2000);
+    } catch (error) {
+      console.error('Error summarizing document:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Summarization Failed',
+        description: 'Could not summarize the document at this time.',
+      });
+    } finally {
+      setSummarizingId(null);
+    }
   };
   
   const handleAnalyze = (file: FileData) => {
@@ -107,8 +143,8 @@ export function FilesTable() {
                     <TableCell>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                            <MoreHorizontal className="h-4 w-4" />
+                        <Button aria-haspopup="true" size="icon" variant="ghost" disabled={!!summarizingId}>
+                           {summarizingId === file.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoreHorizontal className="h-4 w-4" />}
                             <span className="sr-only">Toggle menu</span>
                         </Button>
                         </DropdownMenuTrigger>
