@@ -25,7 +25,7 @@ function AnalysisListPage() {
             <Card>
                 <CardHeader>
                     <CardTitle className="font-headline text-2xl flex items-center gap-2">
-                        <Microscope className="h-6 w-6" /> Document Analyses
+                        <ListOrdered className="h-6 w-6" /> Clauses & Document Analyses
                     </CardTitle>
                     <CardDescription>
                         Review AI-generated analyses of your uploaded documents.
