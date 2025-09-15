@@ -10,7 +10,8 @@ import {
 } from '@/components/ui/sidebar';
 
 const navItems = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/dashboard', icon: Upload, label: 'Upload' },
+  { href: '/files', icon: File, label: 'My Files' },
   { href: '/summaries', icon: BookText, label: 'Summaries' },
   { href: '/chat', icon: MessageSquare, label: 'Chat' },
   { href: '/analysis', icon: Microscope, label: 'Analysis' },

@@ -37,7 +37,7 @@ const fileTypeIcons = {
 export function FilesTable() {
   const router = useRouter();
   const { toast } = useToast();
-  const { files, deleteFile, getFileContent, addSummary } = useFiles();
+  const { files, deleteFile, getFileContent, addSummary, getAnalysis } = useFiles();
   const [summarizingId, setSummarizingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -94,7 +94,16 @@ export function FilesTable() {
   };
   
   const handleAnalyze = (file: FileData) => {
-    router.push(`/analysis?fileId=${file.id}&fileName=${encodeURIComponent(file.name)}`);
+    const analysis = getAnalysis(file.id);
+    if(analysis){
+        router.push(`/analysis?fileId=${file.id}&fileName=${encodeURIComponent(file.name)}`);
+    } else {
+        toast({
+            variant: 'destructive',
+            title: 'Analysis Not Found',
+            description: 'Analysis for this file is not available yet. It may still be processing.',
+        })
+    }
   };
 
   const handleDelete = (file: FileData) => {
@@ -135,7 +144,7 @@ export function FilesTable() {
                     {filteredFiles.length === 0 ? (
                         <TableRow>
                             <TableCell colSpan={5} className="h-24 text-center">
-                            No documents found.
+                            No documents found. Go to the dashboard to upload one.
                             </TableCell>
                         </TableRow>
                     ) : (
@@ -168,7 +177,7 @@ export function FilesTable() {
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleAnalyze(file)}>
                                 <Microscope className="mr-2 h-4 w-4" />
-                                Analyze
+                                View Analysis
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleSummarize(file)}>
                                 <PenSquare className="mr-2 h-4 w-4" />

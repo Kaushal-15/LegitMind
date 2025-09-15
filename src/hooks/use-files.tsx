@@ -1,7 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { FileData, SummaryData, ChatSession, ChatMessage } from '@/lib/placeholder-data';
+import { FileData, SummaryData, ChatSession, ChatMessage, AnalysisData } from '@/lib/placeholder-data';
+import { AnalyzeDocumentOutput } from '@/ai/flows/analyze-document';
 
 interface FilesContextType {
   files: FileData[];
@@ -10,6 +11,9 @@ interface FilesContextType {
   getFileContent: (fileId: string) => string | null;
   summaries: SummaryData[];
   addSummary: (summary: SummaryData) => void;
+  analyses: AnalysisData[];
+  addAnalysis: (analysis: AnalysisData) => void;
+  getAnalysis: (docId: string) => AnalysisData | undefined;
   chats: ChatSession[];
   getChatSession: (docId: string) => ChatSession | undefined;
   addMessageToChat: (docId: string, docName: string, message: ChatMessage) => void;
@@ -20,23 +24,23 @@ const FilesContext = createContext<FilesContextType | undefined>(undefined);
 export const FilesProvider = ({ children }: { children: ReactNode }) => {
   const [files, setFiles] = useState<FileData[]>([]);
   const [summaries, setSummaries] = useState<SummaryData[]>([]);
+  const [analyses, setAnalyses] = useState<AnalysisData[]>([]);
   const [chats, setChats] = useState<ChatSession[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     try {
       const filesItem = window.localStorage.getItem('files');
-      if (filesItem) {
-        setFiles(JSON.parse(filesItem));
-      }
+      if (filesItem) setFiles(JSON.parse(filesItem));
+      
       const summariesItem = window.localStorage.getItem('summaries');
-      if (summariesItem) {
-        setSummaries(JSON.parse(summariesItem));
-      }
+      if (summariesItem) setSummaries(JSON.parse(summariesItem));
+      
+      const analysesItem = window.localStorage.getItem('analyses');
+      if (analysesItem) setAnalyses(JSON.parse(analysesItem));
+      
       const chatsItem = window.localStorage.getItem('chats');
-      if (chatsItem) {
-        setChats(JSON.parse(chatsItem));
-      }
+      if (chatsItem) setChats(JSON.parse(chatsItem));
     } catch (error) {
       console.error("Failed to load data from localStorage", error);
     }
@@ -48,7 +52,7 @@ export const FilesProvider = ({ children }: { children: ReactNode }) => {
         try {
             window.localStorage.setItem('files', JSON.stringify(files));
         } catch (error) {
-            console.error(error);
+            console.error("Failed to save files to localStorage", error);
         }
     }
   }, [files, isLoaded]);
@@ -58,10 +62,20 @@ export const FilesProvider = ({ children }: { children: ReactNode }) => {
         try {
             window.localStorage.setItem('summaries', JSON.stringify(summaries));
         } catch (error) {
-            console.error(error);
+            console.error("Failed to save summaries to localStorage", error);
         }
     }
   }, [summaries, isLoaded]);
+
+  useEffect(() => {
+    if (isLoaded) {
+      try {
+        window.localStorage.setItem('analyses', JSON.stringify(analyses));
+      } catch (error) {
+        console.error("Failed to save analyses to localStorage", error);
+      }
+    }
+  }, [analyses, isLoaded]);
 
   useEffect(() => {
     if (isLoaded) {
@@ -87,6 +101,7 @@ export const FilesProvider = ({ children }: { children: ReactNode }) => {
   const deleteFile = (fileId: string) => {
     setFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileId));
     setSummaries((prevSummaries) => prevSummaries.filter((summary) => summary.docId !== fileId));
+    setAnalyses((prevAnalyses) => prevAnalyses.filter((analysis) => analysis.docId !== fileId));
     setChats((prevChats) => prevChats.filter((chat) => chat.docId !== fileId));
     try {
       window.localStorage.removeItem(`file-content-${fileId}`);
@@ -109,6 +124,14 @@ export const FilesProvider = ({ children }: { children: ReactNode }) => {
 
   const addSummary = (summary: SummaryData) => {
     setSummaries((prevSummaries) => [summary, ...prevSummaries.filter(s => s.docId !== summary.docId)]);
+  }
+  
+  const addAnalysis = (analysis: AnalysisData) => {
+    setAnalyses((prevAnalyses) => [analysis, ...prevAnalyses.filter(a => a.docId !== analysis.docId)]);
+  }
+
+  const getAnalysis = (docId: string): AnalysisData | undefined => {
+    return analyses.find(analysis => analysis.docId === docId);
   }
 
   const getChatSession = (docId: string): ChatSession | undefined => {
@@ -137,8 +160,23 @@ export const FilesProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const contextValue: FilesContextType = {
+    files,
+    addFile,
+    deleteFile,
+    getFileContent,
+    summaries,
+    addSummary,
+    analyses,
+    addAnalysis,
+    getAnalysis,
+    chats,
+    getChatSession,
+    addMessageToChat
+  };
+
   return (
-    <FilesContext.Provider value={{ files, addFile, deleteFile, getFileContent, summaries, addSummary, chats, getChatSession, addMessageToChat }}>
+    <FilesContext.Provider value={contextValue}>
       {isLoaded ? children : null}
     </FilesContext.Provider>
   );

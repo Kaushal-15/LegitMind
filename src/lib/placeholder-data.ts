@@ -1,3 +1,5 @@
+import { AnalyzeDocumentOutput } from "@/ai/flows/analyze-document";
+
 export type FileData = {
   id: string;
   name: string;
@@ -18,6 +20,16 @@ export type SummaryData = {
 };
 
 export const summaries: SummaryData[] = [];
+
+export type AnalysisData = {
+  id: string;
+  docId: string;
+  docName: string;
+  analysis: AnalyzeDocumentOutput;
+  date: string;
+};
+
+export const analyses: AnalysisData[] = [];
 
 export type ChatMessage = {
   role: 'user' | 'assistant';

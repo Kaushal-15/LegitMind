@@ -9,14 +9,17 @@ import { Progress } from '@/components/ui/progress';
 import { useFiles } from '@/hooks/use-files';
 import { FileData } from '@/lib/placeholder-data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { analyzeDocument, AnalyzeDocumentOutput } from '@/ai/flows/analyze-document';
+
 
 export function FileUploader() {
   const [file, setFile] = useState<File | null>(null);
   const [progress, setProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const { toast } = useToast();
-  const { addFile } = useFiles();
+  const { addFile, addAnalysis } = useFiles();
   const router = useRouter();
 
   const handleFileChange = (files: FileList | null) => {
@@ -46,10 +49,12 @@ export function FileUploader() {
       setProgress(100);
 
       const fileContent = e.target?.result as string;
+      const fileId = new Date().toISOString();
+      const fileName = file.name;
 
       const newFile: FileData = {
-        id: new Date().toISOString(),
-        name: file.name,
+        id: fileId,
+        name: fileName,
         size: `${(file.size / 1024).toFixed(2)} KB`,
         date: new Date().toLocaleString(),
         type: (file.name.split('.').pop() as 'pdf' | 'docx' | 'txt') || 'txt',
@@ -58,14 +63,42 @@ export function FileUploader() {
       
       addFile(newFile);
 
-      setTimeout(() => {
-        setIsUploading(false);
-        setFile(null); // Clear the file after successful upload
-        toast({
-          title: 'Upload Complete',
-          description: `${file.name} has been successfully uploaded.`,
+      toast({
+        title: 'Upload Complete',
+        description: `${fileName} has been successfully uploaded. Starting analysis...`,
+      });
+
+      setIsUploading(false);
+      setIsAnalyzing(true);
+
+      // Automatically trigger analysis
+      analyzeDocument({ documentText: fileContent })
+        .then(result => {
+          addAnalysis({
+            id: `analysis-${fileId}`,
+            docId: fileId,
+            docName: fileName,
+            analysis: result,
+            date: new Date().toLocaleString(),
+          });
+          toast({
+            title: 'Analysis Complete',
+            description: `Analysis for ${fileName} is ready.`,
+          });
+          router.push(`/files`);
+        })
+        .catch(error => {
+          console.error('Error analyzing document:', error);
+          toast({
+            variant: 'destructive',
+            title: 'Analysis Failed',
+            description: 'Could not analyze the document automatically.',
+          });
+        })
+        .finally(() => {
+          setIsAnalyzing(false);
+          setFile(null);
         });
-      }, 500);
     };
 
     fileReader.onerror = () => {
@@ -78,7 +111,7 @@ export function FileUploader() {
         });
     }
 
-  }, [file, toast, addFile, router]);
+  }, [file, toast, addFile, addAnalysis, router]);
 
   const onDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -102,6 +135,8 @@ export function FileUploader() {
     setProgress(0);
   };
 
+  const currentActionText = isUploading ? 'Uploading...' : isAnalyzing ? 'Analyzing...' : 'Upload';
+
   return (
     <Card>
       <CardHeader>
@@ -109,7 +144,7 @@ export function FileUploader() {
             <UploadCloud className="h-5 w-5"/>
             Upload Document
         </CardTitle>
-        <CardDescription>Upload PDF legal documents for AI analysis</CardDescription>
+        <CardDescription>Upload PDF, DOCX, or TXT files for AI analysis.</CardDescription>
       </CardHeader>
       <CardContent>
         <div 
@@ -127,7 +162,7 @@ export function FileUploader() {
             className="hidden"
             accept=".pdf,.docx,.txt"
             onChange={(e) => handleFileChange(e.target.files)}
-            disabled={isUploading}
+            disabled={isUploading || isAnalyzing}
           />
           {!file ? (
             <>
@@ -152,21 +187,24 @@ export function FileUploader() {
                     {(file.size / 1024).toFixed(2)} KB
                   </p>
                 </div>
-                {!isUploading && (
+                {!(isUploading || isAnalyzing) && (
                     <Button variant="ghost" size="icon" onClick={clearFile} className="shrink-0">
                         <X className="h-5 w-5" />
                     </Button>
                 )}
               </div>
 
-              {isUploading && (
+              {(isUploading || isAnalyzing) && (
                 <div className="w-full max-w-md">
-                  <Progress value={progress} className="h-2" />
-                  <p className="text-sm text-muted-foreground mt-2">{progress}%</p>
+                    {isUploading && <Progress value={progress} className="h-2" />}
+                    <p className="text-sm text-muted-foreground mt-2 flex items-center justify-center gap-2">
+                        {isAnalyzing && <Loader2 className="h-4 w-4 animate-spin" />}
+                        {currentActionText}
+                    </p>
                 </div>
               )}
 
-              {!isUploading && (
+              {!(isUploading || isAnalyzing) && (
                 <Button onClick={handleUpload} className="mt-4">
                   <UploadCloud className="mr-2 h-4 w-4" />
                   Upload & Analyze

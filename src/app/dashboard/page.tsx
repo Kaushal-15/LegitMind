@@ -2,19 +2,23 @@
 
 import React from 'react';
 import { FileUploader } from '@/components/dashboard/file-uploader';
-import { FilesTable } from '@/components/dashboard/files-table';
+import { GuidanceTool } from '@/components/dashboard/guidance-tool';
 import { FilesProvider } from '@/hooks/use-files';
 import DashboardLayout from '@/components/dashboard/dashboard-layout';
 
 function DashboardPageContent() {
   return (
-    <div className="space-y-8">
-       <div>
-            <h1 className="text-3xl font-headline font-bold tracking-tight">Document Dashboard</h1>
-            <p className="text-muted-foreground">Manage and analyze your legal documents with AI-powered insights</p>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+       <div className="lg:col-span-2 space-y-8">
+            <div>
+                <h1 className="text-3xl font-headline font-bold tracking-tight">Document Dashboard</h1>
+                <p className="text-muted-foreground">Upload and manage your legal documents with AI-powered insights</p>
+            </div>
+            <FileUploader />
        </div>
-      <FileUploader />
-      <FilesTable />
+       <div className="lg:col-span-1">
+            <GuidanceTool />
+       </div>
     </div>
   );
 }

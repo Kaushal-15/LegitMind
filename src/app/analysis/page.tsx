@@ -6,7 +6,7 @@ import { FileText, Shield, AlertTriangle, FileWarning, Loader2, ListOrdered, Use
 import DashboardLayout from '@/components/dashboard/dashboard-layout';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { analyzeDocument, AnalyzeDocumentOutput } from '@/ai/flows/analyze-document';
+import { AnalyzeDocumentOutput } from '@/ai/flows/analyze-document';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { useFiles, FilesProvider } from '@/hooks/use-files';
@@ -15,54 +15,54 @@ function AnalysisPageContent() {
   const searchParams = useSearchParams();
   const fileId = searchParams.get('fileId');
   const fileName = searchParams.get('fileName');
-  const { getFileContent } = useFiles();
+  const { getAnalysis } = useFiles();
   
   const [analysisResult, setAnalysisResult] = useState<AnalyzeDocumentOutput | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (fileId && fileName) {
-      setIsLoading(true);
-      const documentText = getFileContent(fileId);
-      
-      if (!documentText) {
+    if (fileId) {
+      const storedAnalysis = getAnalysis(fileId);
+      if (storedAnalysis) {
+        setAnalysisResult(storedAnalysis.analysis);
+        setIsLoading(false);
+      } else {
+        // This could be a case where analysis is still running or failed.
+        // For now, we assume it should be present if navigated.
         toast({
-            variant: 'destructive',
-            title: 'File Content Not Found',
-            description: 'Could not retrieve the content for this file.',
+          variant: 'destructive',
+          title: 'Analysis Not Found',
+          description: 'Could not retrieve the analysis for this file.',
         });
         setIsLoading(false);
-        return;
       }
-
-      analyzeDocument({ documentText })
-        .then(result => {
-          setAnalysisResult(result);
-        })
-        .catch(error => {
-          console.error('Error analyzing document:', error);
-          toast({
-            variant: 'destructive',
-            title: 'Analysis Failed',
-            description: 'Could not analyze the document at this time. Please try again later.',
-          });
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
+    } else {
+        setIsLoading(false);
     }
-  }, [fileId, fileName, getFileContent, toast]);
+  }, [fileId, getAnalysis, toast]);
+  
+
+  if (isLoading) {
+     return (
+        <div className="flex h-full flex-col items-center justify-center rounded-lg border-2 border-dashed bg-card py-20">
+          <Loader2 className="h-16 w-16 animate-spin text-primary" />
+          <h2 className="mt-6 text-2xl font-headline font-semibold">
+            Loading Analysis...
+          </h2>
+        </div>
+    );
+  }
 
   if (!fileId || !fileName) {
     return (
         <div className="flex h-full flex-col items-center justify-center rounded-lg border-2 border-dashed bg-card">
           <FileWarning className="h-16 w-16 text-muted-foreground" />
           <h2 className="mt-6 text-2xl font-headline font-semibold">
-            Select a Document to Analyze
+            Select a Document to View Analysis
           </h2>
           <p className="mt-2 text-center text-muted-foreground">
-            Please go back to the 'My Files' page and choose a document to analyze.
+            Please go to the 'My Files' page and choose a document to see its analysis.
           </p>
         </div>
     );
@@ -82,12 +82,7 @@ function AnalysisPageContent() {
             </CardHeader>
         </Card>
 
-        {isLoading ? (
-          <div className="flex justify-center items-center py-20">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-            <p className="ml-4 text-lg text-muted-foreground">Analyzing document...</p>
-          </div>
-        ) : analysisResult ? (
+        {analysisResult ? (
           <div className="grid gap-6 lg:grid-cols-1 xl:grid-cols-3">
             <div className="xl:col-span-2 space-y-6">
               <Card>
@@ -160,7 +155,7 @@ function AnalysisPageContent() {
         ) : (
           <Card>
             <CardContent className="py-12 text-center">
-              <p className="text-muted-foreground">No analysis data available for this document.</p>
+              <p className="text-muted-foreground">No analysis data available for this document, or it is still being processed.</p>
             </CardContent>
           </Card>
         )}
