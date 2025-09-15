@@ -19,6 +19,18 @@ export type SummaryData = {
 
 export const summaries: SummaryData[] = [];
 
+export type ChatMessage = {
+  role: 'user' | 'assistant';
+  content: string;
+};
+
+export type ChatSession = {
+  docId: string;
+  docName: string;
+  messages: ChatMessage[];
+  lastUpdated: string;
+}
+
 export const riskData = [
     { risk: 'low', count: 0, fill: 'var(--color-low)' },
     { risk: 'medium', count: 0, fill: 'var(--color-medium)' },

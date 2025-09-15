@@ -11,34 +11,34 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription }
 import { chatWithDocument } from '@/ai/flows/chat-with-document';
 import { useToast } from '@/hooks/use-toast';
 import { useFiles, FilesProvider } from '@/hooks/use-files';
-
-type Message = {
-  role: 'user' | 'assistant';
-  content: string;
-};
+import { ChatMessage } from '@/lib/placeholder-data';
 
 function ChatPageContent() {
   const searchParams = useSearchParams();
   const fileId = searchParams.get('fileId');
   const fileName = searchParams.get('fileName');
-  const { getFileContent } = useFiles();
+  const { getFileContent, getChatSession, addMessageToChat } = useFiles();
   
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (fileName) {
-      setMessages([
-        {
+    if (fileId) {
+      const existingSession = getChatSession(fileId);
+      if (existingSession) {
+        setMessages(existingSession.messages);
+      } else if (fileName) {
+        const initialMessage: ChatMessage = {
           role: 'assistant',
           content: `Hello! I'm ready to answer your questions about "${fileName}". I can understand and respond in various Indian languages. How can I help you?`,
-        },
-      ]);
+        };
+        setMessages([initialMessage]);
+      }
     }
-  }, [fileName]);
+  }, [fileId, fileName, getChatSession]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -48,10 +48,11 @@ function ChatPageContent() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading || !fileId) return;
+    if (!input.trim() || isLoading || !fileId || !fileName) return;
 
-    const userMessage: Message = { role: 'user', content: input };
+    const userMessage: ChatMessage = { role: 'user', content: input };
     setMessages((prev) => [...prev, userMessage]);
+    addMessageToChat(fileId, fileName, userMessage);
     setInput('');
     setIsLoading(true);
 
@@ -65,7 +66,11 @@ function ChatPageContent() {
         documentContext,
         question: input,
       });
-      setMessages((prev) => [...prev, { role: 'assistant', content: result.answer }]);
+      
+      const assistantMessage: ChatMessage = { role: 'assistant', content: result.answer };
+      setMessages((prev) => [...prev, assistantMessage]);
+      addMessageToChat(fileId, fileName, assistantMessage);
+
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Could not get an answer at this time. Please try again.';
         console.error('Error chatting with document:', error);
@@ -74,7 +79,10 @@ function ChatPageContent() {
           title: 'Error',
           description: errorMessage,
         });
-        setMessages((prev) => [...prev, { role: 'assistant', content: `I'm sorry, an error occurred: ${errorMessage}` }]);
+
+        const errorResponseMessage: ChatMessage = { role: 'assistant', content: `I'm sorry, an error occurred: ${errorMessage}` }
+        setMessages((prev) => [...prev, errorResponseMessage]);
+        addMessageToChat(fileId, fileName, errorResponseMessage);
     } finally {
       setIsLoading(false);
     }

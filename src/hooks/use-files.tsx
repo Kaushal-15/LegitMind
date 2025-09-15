@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { FileData, SummaryData } from '@/lib/placeholder-data';
+import { FileData, SummaryData, ChatSession, ChatMessage } from '@/lib/placeholder-data';
 
 interface FilesContextType {
   files: FileData[];
@@ -10,6 +10,9 @@ interface FilesContextType {
   getFileContent: (fileId: string) => string | null;
   summaries: SummaryData[];
   addSummary: (summary: SummaryData) => void;
+  chats: ChatSession[];
+  getChatSession: (docId: string) => ChatSession | undefined;
+  addMessageToChat: (docId: string, docName: string, message: ChatMessage) => void;
 }
 
 const FilesContext = createContext<FilesContextType | undefined>(undefined);
@@ -17,6 +20,7 @@ const FilesContext = createContext<FilesContextType | undefined>(undefined);
 export const FilesProvider = ({ children }: { children: ReactNode }) => {
   const [files, setFiles] = useState<FileData[]>([]);
   const [summaries, setSummaries] = useState<SummaryData[]>([]);
+  const [chats, setChats] = useState<ChatSession[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -28,6 +32,10 @@ export const FilesProvider = ({ children }: { children: ReactNode }) => {
       const summariesItem = window.localStorage.getItem('summaries');
       if (summariesItem) {
         setSummaries(JSON.parse(summariesItem));
+      }
+      const chatsItem = window.localStorage.getItem('chats');
+      if (chatsItem) {
+        setChats(JSON.parse(chatsItem));
       }
     } catch (error) {
       console.error("Failed to load data from localStorage", error);
@@ -55,6 +63,16 @@ export const FilesProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [summaries, isLoaded]);
 
+  useEffect(() => {
+    if (isLoaded) {
+      try {
+        window.localStorage.setItem('chats', JSON.stringify(chats));
+      } catch (error) {
+        console.error("Could not save chats to localStorage", error);
+      }
+    }
+  }, [chats, isLoaded]);
+
   const addFile = (file: FileData) => {
     setFiles((prevFiles) => [...prevFiles, file]);
      if (file.content) {
@@ -69,6 +87,7 @@ export const FilesProvider = ({ children }: { children: ReactNode }) => {
   const deleteFile = (fileId: string) => {
     setFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileId));
     setSummaries((prevSummaries) => prevSummaries.filter((summary) => summary.docId !== fileId));
+    setChats((prevChats) => prevChats.filter((chat) => chat.docId !== fileId));
     try {
       window.localStorage.removeItem(`file-content-${fileId}`);
     } catch(e) {
@@ -92,8 +111,34 @@ export const FilesProvider = ({ children }: { children: ReactNode }) => {
     setSummaries((prevSummaries) => [summary, ...prevSummaries.filter(s => s.docId !== summary.docId)]);
   }
 
+  const getChatSession = (docId: string): ChatSession | undefined => {
+    return chats.find(chat => chat.docId === docId);
+  }
+
+  const addMessageToChat = (docId: string, docName: string, message: ChatMessage) => {
+    setChats(prevChats => {
+      const chatIndex = prevChats.findIndex(chat => chat.docId === docId);
+      if (chatIndex > -1) {
+        const updatedChats = [...prevChats];
+        const updatedChat = { ...updatedChats[chatIndex] };
+        updatedChat.messages = [...updatedChat.messages, message];
+        updatedChat.lastUpdated = new Date().toISOString();
+        updatedChats[chatIndex] = updatedChat;
+        return updatedChats;
+      } else {
+        const newChat: ChatSession = {
+          docId,
+          docName,
+          messages: [message],
+          lastUpdated: new Date().toISOString()
+        };
+        return [...prevChats, newChat];
+      }
+    });
+  };
+
   return (
-    <FilesContext.Provider value={{ files, addFile, deleteFile, getFileContent, summaries, addSummary }}>
+    <FilesContext.Provider value={{ files, addFile, deleteFile, getFileContent, summaries, addSummary, chats, getChatSession, addMessageToChat }}>
       {isLoaded ? children : null}
     </FilesContext.Provider>
   );
