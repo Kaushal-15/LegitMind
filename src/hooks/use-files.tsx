@@ -15,48 +15,45 @@ interface FilesContextType {
 const FilesContext = createContext<FilesContextType | undefined>(undefined);
 
 export const FilesProvider = ({ children }: { children: ReactNode }) => {
-  const [files, setFiles] = useState<FileData[]>(() => {
-    if (typeof window === 'undefined') {
-      return [];
-    }
-    try {
-      const item = window.localStorage.getItem('files');
-      return item ? JSON.parse(item) : [];
-    } catch (error) {
-      console.error(error);
-      return [];
-    }
-  });
-
-  const [summaries, setSummaries] = useState<SummaryData[]>(() => {
-    if (typeof window === 'undefined') {
-      return [];
-    }
-    try {
-      const item = window.localStorage.getItem('summaries');
-      return item ? JSON.parse(item) : [];
-    } catch (error) {
-      console.error(error);
-      return [];
-    }
-  });
-
+  const [files, setFiles] = useState<FileData[]>([]);
+  const [summaries, setSummaries] = useState<SummaryData[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     try {
-      window.localStorage.setItem('files', JSON.stringify(files));
+      const filesItem = window.localStorage.getItem('files');
+      if (filesItem) {
+        setFiles(JSON.parse(filesItem));
+      }
+      const summariesItem = window.localStorage.getItem('summaries');
+      if (summariesItem) {
+        setSummaries(JSON.parse(summariesItem));
+      }
     } catch (error) {
-      console.error(error);
+      console.error("Failed to load data from localStorage", error);
     }
-  }, [files]);
+    setIsLoaded(true);
+  }, []);
 
   useEffect(() => {
-    try {
-      window.localStorage.setItem('summaries', JSON.stringify(summaries));
-    } catch (error) {
-      console.error(error);
+    if (isLoaded) {
+        try {
+            window.localStorage.setItem('files', JSON.stringify(files));
+        } catch (error) {
+            console.error(error);
+        }
     }
-  }, [summaries]);
+  }, [files, isLoaded]);
+
+  useEffect(() => {
+    if (isLoaded) {
+        try {
+            window.localStorage.setItem('summaries', JSON.stringify(summaries));
+        } catch (error) {
+            console.error(error);
+        }
+    }
+  }, [summaries, isLoaded]);
 
   const addFile = (file: FileData) => {
     setFiles((prevFiles) => [...prevFiles, file]);
@@ -97,7 +94,7 @@ export const FilesProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <FilesContext.Provider value={{ files, addFile, deleteFile, getFileContent, summaries, addSummary }}>
-      {children}
+      {isLoaded ? children : null}
     </FilesContext.Provider>
   );
 };
