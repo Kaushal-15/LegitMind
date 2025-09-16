@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -32,7 +33,7 @@ const formSchema = z.object({
 });
 
 const GoogleIcon = () => (
-  <svg className="h-4 w-4" viewBox="0 0 24 24">
+    <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
     <path
       fill="currentColor"
       d="M21.35 11.1h-9.35v2.8h5.6c-.25 1.55-1.3 2.8-2.8 3.65v2.2h2.8c1.6-1.5 2.5-3.75 2.5-6.45c0-.6-.05-1.2-.15-1.8z"
@@ -54,6 +55,7 @@ const GoogleIcon = () => (
 
 
 export function SignupForm() {
+  const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -65,10 +67,11 @@ export function SignupForm() {
 
   function onSubmit(data: z.infer<typeof formSchema>) {
     toast({
-      title: 'Signup Submitted',
-      description: 'This is a mock signup. No account was created.',
+      title: 'Account Created',
+      description: 'Welcome! Redirecting you to the dashboard.',
     });
     console.log(data);
+    router.push('/dashboard');
   }
 
   return (

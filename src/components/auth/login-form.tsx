@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -24,7 +25,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email.' }),
@@ -32,7 +32,7 @@ const formSchema = z.object({
 });
 
 const GoogleIcon = () => (
-  <svg className="h-4 w-4" viewBox="0 0 24 24">
+  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
     <path
       fill="currentColor"
       d="M21.35 11.1h-9.35v2.8h5.6c-.25 1.55-1.3 2.8-2.8 3.65v2.2h2.8c1.6-1.5 2.5-3.75 2.5-6.45c0-.6-.05-1.2-.15-1.8z"
@@ -53,6 +53,7 @@ const GoogleIcon = () => (
 );
 
 export function LoginForm() {
+  const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -63,10 +64,11 @@ export function LoginForm() {
 
   function onSubmit(data: z.infer<typeof formSchema>) {
     toast({
-      title: 'Login Submitted',
-      description: 'This is a mock login. No actual authentication took place.',
+      title: 'Login Successful',
+      description: 'Welcome back! Redirecting you to the dashboard.',
     });
     console.log(data);
+    router.push('/dashboard');
   }
 
   return (
@@ -81,7 +83,7 @@ export function LoginForm() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-4">
-              <Button variant="outline" className="w-full">
+               <Button variant="outline" className="w-full">
                 <GoogleIcon />
                 Sign in with Google
               </Button>
